@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { maintenanceSchema, type MaintenanceFormValues } from "@/lib/validations/maintenance";
+import { supabase } from "@/lib/supabase";
 // sementara pake input biasa dulu, nanti diganti sama datepicker
 
 export default function MaintenanceForm() {
@@ -33,26 +35,58 @@ export default function MaintenanceForm() {
         }
     });
 
+    //logika tanstack react query untuk insert data ke supabase
+    const mutation = useMutation({
+      mutationFn: async (formData: MaintenanceFormValues) => {
+        //kita akan insert data ke supabase
+        const { data: insertedData, error } = await supabase.from("equipment_maintenance_logs")
+        .insert([
+          {
+            equipment_name: formData.equipment_name,
+            operator_name: formData.operator_name,
+            bulan: formData.bulan,
+            pengecekan: formData.pengecekan,
+            sparepart_diganti: formData.sparepart_diganti,
+            tanggal_rusak: new Date().toISOString(), //gunakan tanggal sekarang sebagai tanggal rusak
+            teknisi_pengerja: formData.teknisi_pengerja,
+            keterangan: formData.keterangan,
+          },
+        ])
+        .select();
+
+        if (error) {
+          throw new Error(error.message);
+        }
+        return insertedData;
+      },
+      onSuccess: () => {
+        alert("Mantap! Data berhasil masuk ke database.");
+        form.reset(); //reset form setelah berhasil submit
+      },
+      onError: (error: Error) => {
+        alert(`Gagal mengirim data ke database: ${error.message}`);
+      }
+    });
+
     //2.  fungsi yang akan dijalankan saat form disubmit
     function onSubmit(data: MaintenanceFormValues) {
         //kita console log data yang dikirim dari form
         console.log("data siap dikirim ke supabase:", data);
-        alert("Data berhasil dikirim ke supabase. Silakan cek console log untuk melihat data yang dikirim.");
+        mutation.mutate(data);
     }
 
     //3. render UI form
     return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-sm border mt-20">
       
-<nav className="bg-neutral-primary fixed w-full z-20 top-0 start-0 border-b border-default">
-  <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-    <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
+<nav className="bg-neutral-primary fixed w-full z-20 top-0 inset-s-0 border-b border-default">
+  <div className="max-w-7xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <a href="../" className="flex items-center space-x-3 rtl:space-x-reverse">
         <Image src="/images/taman-safari.webp" className="h-7" alt="TamanSafari Logo" width={100} height={200} />
         
     </a>
     <button data-collapse-toggle="navbar-default" type="button" className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary" aria-controls="navbar-default" aria-expanded="false">
-        <span className="sr-only">Open main menu</span>
-        <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14"/></svg>
+        
     </button>
   </div>
 </nav>
