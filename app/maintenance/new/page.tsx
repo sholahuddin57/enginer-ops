@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { maintenanceSchema, type MaintenanceFormValues } from "@/lib/validations/maintenance";
 // sementara pake input biasa dulu, nanti diganti sama datepicker
 
@@ -40,7 +42,21 @@ export default function MaintenanceForm() {
 
     //3. render UI form
     return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-sm border mt-10">
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-sm border mt-20">
+      
+<nav className="bg-neutral-primary fixed w-full z-20 top-0 start-0 border-b border-default">
+  <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
+        <Image src="/images/taman-safari.webp" className="h-7" alt="TamanSafari Logo" width={100} height={200} />
+        
+    </a>
+    <button data-collapse-toggle="navbar-default" type="button" className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary" aria-controls="navbar-default" aria-expanded="false">
+        <span className="sr-only">Open main menu</span>
+        <svg className="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14"/></svg>
+    </button>
+  </div>
+</nav>
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Form Maintenance Log</h1>
         <p className="text-gray-500">Catat detail kerusakan dan perbaikan alat (Enginer-Ops).</p>
