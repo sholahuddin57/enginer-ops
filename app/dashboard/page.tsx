@@ -1,6 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { button } from "@/components/ui/button";
+import * as ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import {
@@ -47,6 +50,49 @@ export default function DashboardPage() {
         );
     }
 
+    //const export to Excel function
+    const exportToExcel = async () => {
+        if (!maintenanceLogs || maintenanceLogs.length === 0) {
+            alert("Tidak ada data untuk diekspor.");
+            return;
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Maintenance Logs");
+
+        worksheet.mergeCells("A1:I3");
+        worksheet.getCell("A1").value = "TABEL MAINTENANCE";
+        worksheet.getCell("A1").alignment = { vertical: "middle", horizontal: "center" };
+        worksheet.getCell("A1").font = { size: 14, bold: true };
+        worksheet.getCell("A5").value = "NAMA WAHANA";
+        worksheet.getCell("C5").value = ": SEMUA ALAT";
+        worksheet.getCell("A6").value = "BULAN";
+        worksheet.getCell("C6").value = `: ${maintenanceLogs[0]?.bulan || "-"}`;
+
+        const headers = ["No", "Pengecekan", "Sparepart yang diganti", "", "Tanggal Rusak", "Tanggal Selesai", "Operator Pelapor", "Teknisi Pengerja", "Keterangan"];
+        worksheet.getRow(9).values = headers;
+        worksheet.getRow(9).font = { bold: true };
+
+        maintenanceLogs.forEach((log: any, index: number) => {
+            const rowData = [
+                index + 1,
+                log.pengecekan,
+                log.sparepart_diganti,
+                "",
+                log.tanggal_rusak,
+                log.tanggal_selesai,
+                log.operator_pelapor,
+                log.teknisi_pengerja,
+                log.keterangan
+            ];
+            worksheet.addRow(rowData);
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        saveAs(blob, `Maintenance_Log_${maintenanceLogs[0]?.bulan || "ALL"}.xlsx`);
+    };
+
     // tampilan utama tabel maintenance logs
     return (
     
@@ -67,7 +113,9 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard Enginer-Ops</h1>
           <p className="text-gray-500 text-sm">Riwayat pengecekan dan perbaikan alat</p>
         </div>
-        {/* Nanti tombol Export Excel / CSV akan kita taruh di sini */}
+        <button onClick={exportToExcel} className="bg-blue-500 hover:bg-blue-700 text-white font-light py-2 px-3 rounded">
+                Export to Excel
+            </button>
       </div>
 
       <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
